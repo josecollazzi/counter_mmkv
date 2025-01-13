@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="counterValue">0</string>
+    <string name="interactionButtonLocation">Flutter</string>
+    <string name="persistedLogicLocation">Flutter</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">This is an app widget description</string>
+</resources>

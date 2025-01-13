@@ -1,0 +1,42 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Android.AppWidget.Container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.Android.AppWidgetContainer">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/counterValue"
+            android:layout_width="match_parent"
+            android:layout_height="82dp"
+            android:text="@string/counterValue"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
+
+        <TextView
+            android:id="@+id/interactionButtonLocation"
+            android:layout_width="match_parent"
+            android:layout_height="114dp"
+            android:text="@string/interactionButtonLocation"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
+
+        <TextView
+            android:id="@+id/persistedLogicLocation"
+            android:layout_width="match_parent"
+            android:layout_height="128dp"
+            android:text="@string/persistedLogicLocation"
+            android:textAppearance="@android:style/TextAppearance.Material.Body1" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="275dp"
+            android:layout_height="74dp"
+            android:text="+"
+            android:textAppearance="@android:style/TextAppearance.Material.Display2" />
+    </LinearLayout>
+
+</RelativeLayout>

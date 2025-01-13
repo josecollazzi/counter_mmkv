@@ -34,13 +34,28 @@ android {
         versionName = flutter.versionName
     }
 
-
-
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+        }
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation "com.google.code.gson:gson:2.10.1"
+    implementation 'androidx.compose.foundation:foundation-android:1.7.6'
+    implementation "com.ctrip.flight.mmkv:mmkv-kotlin-android:1.2.7"
+    modules {
+        module("com.tencent:mmkv-static") {
+            replacedBy("com.tencent:mmkv", "Using mmkv for flutter")
+        }
+        module("com.tencent:mmkv-shared") {
+            replacedBy("com.tencent:mmkv", "Using mmkv for flutter")
         }
     }
 }
