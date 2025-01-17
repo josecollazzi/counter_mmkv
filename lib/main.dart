@@ -1,21 +1,25 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui';
 import 'package:counter_mmkv/counter_interaction.dart';
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:mmkv/mmkv.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
 
 const String counterIterationKey = 'counter_interactions';
+const String appGroupId = 'group.com.josecollazzi.counter_mmkv_g';
 
 @pragma("vm:entry-point")
 Future<void> interactiveCallback(Uri? data) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final rootDir = await MMKV.initialize();
+  final rootDir = await initializeMMKV();
+  await HomeWidget.setAppGroupId(appGroupId);
   if (data?.host == 'increment_counter' || true) {
     debugPrint("increment_counter");
-    var mmkv = MMKV.defaultMMKV();
+    var mmkv = await getMMKV();
     final jsonString = mmkv.decodeString(counterIterationKey);
     List<CounterInteraction> interactions = [];
 
@@ -38,21 +42,62 @@ Future<void> interactiveCallback(Uri? data) async {
 
     final counterSerialised = json.encode(newList.map((item) => item.toJson()).toList());
     mmkv.encodeString(counterIterationKey, counterSerialised);
-    await HomeWidget.setAppGroupId('com.josecollazzi.counter_mmkv');
-    await HomeWidget.updateWidget(
-      qualifiedAndroidName:
-      'com.josecollazzi.counter_mmkv.CounterAppWidget',
-    );
 
+    await updateWidget();
+    // update main activity
     final sendPort = IsolateNameServer.lookupPortByName('background_isolate');
     sendPort?.send('update_widget');
   }
 }
 
-Future<void> main() async {
-  final rootDir = await MMKV.initialize();
-  print('MMKV for flutter with rootDir = $rootDir');
+Future<MMKV> getMMKV() async {
+    return MMKV("counter_storage",
+        rootDir: (Platform.isIOS)? await pathDir(): null,
+        mode: MMKVMode.MULTI_PROCESS_MODE);
+}
 
+
+Future<void> updateWidget() async {
+  if (Platform.isIOS) {
+    await HomeWidget.updateWidget(
+        name: "CounterWidget",
+        iOSName: "CounterWidget"
+    );
+  } else if (Platform.isAndroid) {
+    await HomeWidget.updateWidget(
+        qualifiedAndroidName: 'com.josecollazzi.counter_mmkv.CounterAppWidget',
+    );
+  }
+}
+
+Future<String?>  pathDir() async {
+  final PathProviderFoundation provider = PathProviderFoundation();
+
+  final sharedDirectory = await provider.getContainerPath(
+    appGroupIdentifier: appGroupId,
+  );
+
+  return  sharedDirectory ?? "";
+}
+
+
+Future<String?> initializeMMKV() async {
+  try {
+    final groupDir = await MMKV.initialize(groupDir: await pathDir(),);
+
+    print('MMKV initialized successfully. Shared directory: $groupDir');
+    return groupDir;
+  } catch (e) {
+    print('Error initializing MMKV: $e');
+    return null;
+  }
+
+}
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final rootDir = await initializeMMKV();
+  print('MMKV for flutter with rootDir = $rootDir');
   runApp(const MyApp());
 }
 
@@ -108,12 +153,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<CounterInteraction> _counter = [];
-  var mmkv = MMKV.defaultMMKV();
+  late MMKV mmkv;
 
-  @override
-  void initState() {
-    super.initState();
-    HomeWidget.registerInteractivityCallback(interactiveCallback);
+  Future<void> initialize() async {
+    mmkv = await getMMKV();
     _loadCounterInteractions();
     final receivePort = ReceivePort();
     IsolateNameServer.registerPortWithName(receivePort.sendPort, 'background_isolate');
@@ -126,6 +169,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    HomeWidget.setAppGroupId(appGroupId);
+    HomeWidget.registerInteractivityCallback(interactiveCallback);
+    initialize();
+  }
+
   void _loadCounterInteractions() {
     final jsonString = mmkv.decodeString(counterIterationKey);
 
@@ -135,17 +186,15 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _updateWidget() async {
-    await HomeWidget.updateWidget(
-      qualifiedAndroidName:
-      'com.josecollazzi.counter_mmkv.CounterAppWidget',
-    );
-  }
 
-  void _saveCounterInteractions(List<CounterInteraction> interactions) {
+  void _saveCounterInteractions(List<CounterInteraction> interactions) async {
     final jsonString = json.encode(interactions.map((item) => item.toJson()).toList());
     mmkv.encodeString(counterIterationKey, jsonString);
-    _updateWidget();
+
+    // Add a small delay to ensure sync completes
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    await updateWidget();
   }
 
   void _incrementCounter() {

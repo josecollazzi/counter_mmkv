@@ -60,7 +60,7 @@ internal fun updateAppWidget(
     appWidgetManager: AppWidgetManager,
     appWidgetId: Int
 ) {
-    val mmkv = MMKV.defaultMMKV()
+    val mmkv = MMKV.mmkvWithID("counter_storage",  2)
     var listJson = mmkv.getString("counter_interactions", "[]");
     if (listJson == null) {
         listJson = "[]";
