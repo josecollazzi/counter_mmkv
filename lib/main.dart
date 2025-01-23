@@ -183,6 +183,9 @@ class _MyHomePageState extends State<MyHomePage> {
     if (jsonString != null) {
       final List<dynamic> jsonList = jsonDecode(jsonString);
       _counter = jsonList.map((item) => CounterInteraction.fromJson(item)).toList();
+      setState(() {
+
+      });
     }
   }
 

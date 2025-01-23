@@ -8,6 +8,7 @@
 import WidgetKit
 import SwiftUI
 import MMKVAppExtension
+import SharedFramework
 
 struct Provider: TimelineProvider {
     private let appGroupId: String = "group.com.josecollazzi.counter_mmkv_g"
@@ -111,14 +112,16 @@ struct CounterWidgetEntryView : View {
             Text("Persisted Logic Location: \(entry.counter.persistedLogicLocation)")
             
             if #available(iOSApplicationExtension 17, *) {
-//                      Button(
-//                        intent: BackgroundIntent(
-//                            url: URL(string: "homeWidgetExample://increment_counter"), appGroup: appGroupId)
-//                      ) {
-//                        Text(entry.title).bold().font(
-//                          .title)
-//                      }.buttonStyle(.plain).frame(maxWidth: .infinity, alignment: .leading)
+                Button(
+                   intent: BackgroundIntent(
+                     url: URL(string: "myapp://increment_counter"),
+                     appGroup: appGroupId)
+                 ) {
+                   Text("Add").bold().font( /*@START_MENU_TOKEN@*/.title /*@END_MENU_TOKEN@*/)
+                 }.buttonStyle(.plain)
+
             }
+
         }
     }
 }
